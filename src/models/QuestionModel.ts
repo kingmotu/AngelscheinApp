@@ -6,7 +6,7 @@ export interface IQuestionModel {
   answer_1: string;
   answer_2: string;
   answer_3: string;
-  key: number;
+  key: 1|2|3;
   key_text: string;
   image?: string;
   category: categoryIds;
@@ -18,7 +18,7 @@ export class QuestionModel implements IQuestionModel {
   public answer_1: string;
   public answer_2: string;
   public answer_3: string;
-  public key: number;
+  public key: 1|2|3;
   public key_text: string;
   public image?: string;
   public category: categoryIds;
@@ -32,7 +32,7 @@ export class QuestionModel implements IQuestionModel {
     this.answer_1 = (obj && obj.answer_1) || "";
     this.answer_2 = (obj && obj.answer_2) || "";
     this.answer_3 = (obj && obj.answer_3) || "";
-    this.key = (obj && obj.key) || 0;
+    this.key = (obj && obj.key) || 1;
     this.key_text = (obj && obj.key_text) || "";
     this.category = (obj && obj.category) || "afk";
     if (obj && obj.image) {

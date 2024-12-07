@@ -1,6 +1,9 @@
 <template>
   <v-container class="fill-height">
-    <v-responsive class="align-centerfill-height mx-auto flex-shrink-1" max-width="900">
+    <v-responsive
+      class="align-centerfill-height mx-auto flex-shrink-1"
+      max-width="900"
+    >
       <v-select
         v-model="selectedCategory"
         label="Kategorie"
@@ -9,14 +12,21 @@
         item-value="id"
         :clearable="true"
       />
-
-      <v-btn
-        color="deep-purple-darken-2"
-        size="x-large"
-        @click="getRandomQuestion()"
-      >
-        Neu Frage
-      </v-btn>
+      <div class="d-flex">
+        <div class="flex-grow-1">
+          <v-btn
+            color="deep-purple-darken-2"
+            size="x-large"
+            @click="getRandomQuestion()"
+          >
+            Neu Frage
+          </v-btn>
+        </div>
+        <div class="d-flex ga-4 justify-end align-center text-h5">
+          <span class="text-green"> {{ correctCounter }}</span>
+          <span class="text-red"> {{ wrongCounter }}</span>
+        </div>
+      </div>
 
       <div class="py-4" />
 
@@ -58,12 +68,7 @@
                 class="my-1"
               ></v-radio>
             </v-radio-group>
-            <v-btn
-              class="mt-2"
-              type="submit"
-              block
-              :disabled="radios === undefined"
-            >
+            <v-btn class="mt-2" type="submit" block :disabled="disableSubmit">
               Submit
             </v-btn>
           </v-form>
@@ -84,10 +89,19 @@ const { mobile } = useDisplay();
 const categories = ref<CategoryModel[]>([]);
 const selectedCategory = ref<categoryIds>();
 const randomQuestion = ref<QuestionModel>();
-const radios = ref<string>();
+const radios = ref<1 | 2 | 3>();
 const answerText = ref<string>();
-const answerId = ref<number>();
+const answerId = ref<1 | 2 | 3>();
 const validate = ref(false);
+const disableSubmit = computed(() => {
+  if (radios.value === undefined) {
+    return true;
+  } else if (radios.value !== undefined && validate.value === false) {
+    return false;
+  } else {
+    return true;
+  }
+});
 
 const imageUrl = computed(() => {
   let url = "";
@@ -100,9 +114,12 @@ const imageUrl = computed(() => {
   return url;
 });
 
+const correctCounter = ref(0);
+const wrongCounter = ref(0);
+
 onMounted(() => {
-  console.log(mobile.value); // false
-  categories.value = DataService.Categories;
+  categories.value = DataService.CategorieList;
+  counters();
 });
 
 const getRandomQuestion = () => {
@@ -113,12 +130,11 @@ const getRandomQuestion = () => {
   } else {
     randomQuestion.value = DataService.RandomQuestion();
   }
-  console.log(`randomQuestion: `, randomQuestion.value);
 };
 
 const getCategoryLabel = (inId?: categoryIds) => {
   return inId
-    ? DataService.Categories.find((cat) => cat.id === inId)?.text
+    ? DataService.CategorieList.find((cat) => cat.id === inId)?.text
     : "Kategorie unbekannt";
 };
 
@@ -127,26 +143,35 @@ const submit = (event: Event) => {
   validate.value = true;
   answerText.value = randomQuestion.value?.key_text;
   answerId.value = randomQuestion.value?.key;
+  if (randomQuestion.value && radios.value) {
+    DataService.AddNewAnswer(randomQuestion.value, radios.value);
+  }
+  counters();
 };
 
 const validAnswer = (id: number) => {
   let classString = "";
   if (validate.value === true && radios.value) {
-    if (id === randomQuestion.value?.key && parseInt(radios.value, 10) === id) {
+    if (id === randomQuestion.value?.key && radios.value === id) {
       classString = "correct-answer";
-    } else if (
-      id !== randomQuestion.value?.key &&
-      parseInt(radios.value, 10) === id
-    ) {
+    } else if (id !== randomQuestion.value?.key && radios.value === id) {
       classString = "wrong-answer";
-    } else if (
-      id === randomQuestion.value?.key &&
-      parseInt(radios.value, 10) !== id
-    ) {
+    } else if (id === randomQuestion.value?.key && radios.value !== id) {
       classString = "correct-answer";
     }
   }
   return classString;
+};
+
+const counters = () => {
+  correctCounter.value =
+    DataService.AnswerdQuestionList.map(
+      (item) => item?.answerdCorrect() ?? 0
+    )?.reduce((total, num) => total + num, 0) ?? 0;
+  wrongCounter.value =
+    DataService.AnswerdQuestionList.map(
+      (item) => item?.answerdWrong() ?? 0
+    )?.reduce((total, num) => total + num, 0) ?? 0;
 };
 </script>
 

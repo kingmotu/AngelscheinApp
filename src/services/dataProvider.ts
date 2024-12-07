@@ -2,6 +2,9 @@ import { QuestionModel } from "@/models/QuestionModel";
 
 import dataJson from "@/assets/data/angelschein_fragenkatalog.json";
 import { CategoryModel, type categoryIds } from "@/models/CategoryModel";
+import { QuestionAnswerdModel } from "@/models/QuestionAnswerdModel";
+
+const localStorageKey = "AngelscheinApp";
 
 class DataProvider {
   /**
@@ -10,7 +13,7 @@ class DataProvider {
   private static instance: DataProvider;
 
   private allData: QuestionModel[] = [];
-  private categories: CategoryModel[] = [
+  private categorieList: CategoryModel[] = [
     { id: "afk", text: "Allgemeine Fischkunde" },
     { id: "sfk", text: "Spezielle Fischkunde" },
     { id: "gwk", text: "Gewässerkunde" },
@@ -19,13 +22,15 @@ class DataProvider {
   ];
   private lastUsedId: number = -1;
 
+  private answerdQuestionList: QuestionAnswerdModel[] = [];
+
   /**
    * The Singleton's constructor should always be private to prevent direct
    * construction calls with the `new` operator.
    */
   private constructor() {
     this.allData = dataJson.map((question) => {
-      const category = this.categories.find(
+      const category = this.categorieList.find(
         (cat) => cat.text === question.category
       );
       const mappedQestion = new QuestionModel({
@@ -34,7 +39,7 @@ class DataProvider {
         answer_3: question.answer_3,
         category: category?.id ?? "afk",
         id: question.id,
-        key: question.key,
+        key: question.key as 1 | 2 | 3,
         key_text: question.key_text,
         question: question.question,
       });
@@ -43,6 +48,8 @@ class DataProvider {
       }
       return mappedQestion;
     });
+
+    this.loadAnswerdQuestionList();
   }
 
   /**
@@ -63,8 +70,12 @@ class DataProvider {
     return this.allData;
   }
 
-  public get Categories(): CategoryModel[] {
-    return this.categories;
+  public get CategorieList(): CategoryModel[] {
+    return this.categorieList;
+  }
+
+  public get AnswerdQuestionList(): QuestionAnswerdModel[] {
+    return this.answerdQuestionList;
   }
 
   public QuestionsByCategory(inCategoryId: categoryIds): QuestionModel[] {
@@ -80,6 +91,24 @@ class DataProvider {
     return data[this.getRand(data.length)];
   }
 
+  public AddNewAnswer(question: QuestionModel, selectedAnswerId: 1 | 2 | 3) {
+    const usedItem = this.answerdQuestionList.find(
+      (q) => q.questionId === question.id
+    );
+    if (usedItem) {
+      usedItem.increaseAnswers(selectedAnswerId);
+    } else {
+      const newItem = new QuestionAnswerdModel();
+      newItem.category = question.category;
+      newItem.questionId = question.id;
+      newItem.correctAnswerKey = question.key;
+      newItem.increaseAnswers(selectedAnswerId);
+      this.answerdQuestionList.push(newItem);
+    }
+
+    this.saveAnswerdQuestionList();
+  }
+
   private getRand(max: number): number {
     const randomNumber = parseInt(
       ((Math.random() * 10000) % max).toFixed(0),
@@ -89,6 +118,27 @@ class DataProvider {
       return randomNumber;
     } else {
       return this.getRand(max);
+    }
+  }
+
+  private saveAnswerdQuestionList() {
+    if (window.localStorage) {
+      window.localStorage.setItem(
+        localStorageKey,
+        JSON.stringify(this.answerdQuestionList)
+      );
+    }
+  }
+
+  private loadAnswerdQuestionList() {
+    if (window.localStorage) {
+      const answerdList = window.localStorage.getItem(localStorageKey);
+      if (answerdList) {
+        const dataList = JSON.parse(answerdList);
+        dataList.forEach((item: QuestionAnswerdModel) => {
+          this.answerdQuestionList.push(new QuestionAnswerdModel(item));
+        });
+      }
     }
   }
 }
