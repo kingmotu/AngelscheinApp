@@ -23,8 +23,12 @@
           </v-btn>
         </div>
         <div class="d-flex ga-4 justify-end align-center text-h5">
-          <span class="text-green"> {{ correctCounter }}</span>
-          <span class="text-red"> {{ wrongCounter }}</span>
+          <span class="text-green" title="Fragen richtig beantwortet">
+            {{ correctCounter }}
+          </span>
+          <span class="text-red" title="Fragen falsch beantwortet">
+            {{ wrongCounter }}
+          </span>
         </div>
       </div>
 
