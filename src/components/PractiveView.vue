@@ -86,9 +86,6 @@
 import { CategoryModel, type categoryIds } from "@/models/CategoryModel";
 import { QuestionModel } from "@/models/QuestionModel";
 import { DataService } from "@/services";
-import { useDisplay } from "vuetify";
-
-const { mobile } = useDisplay();
 
 const categories = ref<CategoryModel[]>([]);
 const selectedCategory = ref<categoryIds>();
