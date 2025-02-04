@@ -9,7 +9,7 @@
     <v-tabs-window-item v-for="n in 3" :key="n" :value="n">
       <PractiveView v-if="n === 1" />
       <EvaluationView v-if="n === 2" />
-      <div v-if="n === 3">Fragenkatalog</div>
+      <QuestionView v-if="n === 3" />
     </v-tabs-window-item>
   </v-tabs-window>
 </template>
