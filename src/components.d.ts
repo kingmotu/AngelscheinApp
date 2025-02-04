@@ -8,7 +8,6 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AppFooter: typeof import('./components/AppFooter.vue')['default']
-    copy: typeof import('./components/EvaluationView copy.vue')['default']
     EvaluationView: typeof import('./components/EvaluationView.vue')['default']
     PractiveView: typeof import('./components/PractiveView.vue')['default']
     QuestionView: typeof import('./components/QuestionView.vue')['default']
